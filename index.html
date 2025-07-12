@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -112,10 +111,7 @@
             top: 75px;
             left: 20px;
         }
-        .fully-actuated-target {
-            top: 75px;
-            right: 20px; /* Positioned relative to animation-area, so fixed */
-        }
+        /* No specific target class needed, will be calculated dynamically */
 
         /* Underactuated Specifics (Cart-Pendulum) */
         #cart {
@@ -260,7 +256,7 @@
             <h2 class="card-title">Fully Actuated Systems</h2>
             <div class="animation-area">
                 <div class="robot-element" id="fullyActuatedRobot">OmniBot</div>
-                <div class="target fully-actuated-target">Goal</div>
+                <div class="target" id="fullyActuatedTarget" style="top: 140px; right: 20px;">Goal</div>
             </div>
             <p class="card-text">
                 A **fully actuated** system possesses an **equal number of independent actuators** (like motors or thrusters) as its degrees of freedom (DoFs). This grants direct, precise control over every single independent movement the robot can make. It's like having a dedicated control for every possible direction.
@@ -332,7 +328,7 @@
         function resetElement(elementId, initialLeft, initialTop, initialTransform = 'none', initialOpacity = 1) {
             const el = document.getElementById(elementId);
             if (!el) return;
-            el.style.transition = 'none';
+            el.style.transition = 'none'; // Temporarily disable transitions
             el.style.left = initialLeft !== undefined ? initialLeft + 'px' : el.style.left;
             el.style.top = initialTop !== undefined ? initialTop + 'px' : el.style.top;
             el.style.transform = initialTransform;
@@ -340,22 +336,54 @@
             void el.offsetWidth; // Trigger reflow to apply transition:none immediately
         }
 
-        // --- Fully Actuated Animation (Omni-directional movement) ---
+        // --- Fully Actuated Animation (Omni-directional movement with multiple waypoints) ---
+        let fullyActuatedAnimationTimeout;
         function startFullyActuatedAnimation() {
             const robot = document.getElementById('fullyActuatedRobot');
-            // Reset to start point
+            const target = document.getElementById('fullyActuatedTarget');
+            
+            // Get target's center position
+            const targetRect = target.getBoundingClientRect();
+            const animationAreaRect = target.parentElement.getBoundingClientRect();
+            const targetCenterX = targetRect.left - animationAreaRect.left + (targetRect.width / 2) - (robot.offsetWidth / 2);
+            const targetCenterY = targetRect.top - animationAreaRect.top + (targetRect.height / 2) - (robot.offsetHeight / 2);
+
             const startX = 20;
             const startY = 75;
-            const targetX = 345; // Fixed target X relative to animation area
-            const targetY = 75;  // Fixed target Y relative to animation area
 
+            // Define a sequence of precise movements
+            const waypoints = [
+                { x: 200, y: 50, duration: 1.5 }, // Move diagonally up-right
+                { x: 100, y: 150, duration: 1.5 }, // Move diagonally down-left
+                { x: targetCenterX, y: targetCenterY, duration: 2 } // Move directly to the final target
+            ];
+
+            let step = 0;
+
+            // Clear any previous animation timeouts
+            clearTimeout(fullyActuatedAnimationTimeout);
+
+            // Reset robot to start position
             resetElement('fullyActuatedRobot', startX, startY);
 
-            setTimeout(() => {
-                robot.style.transition = 'all 2s ease-in-out';
-                robot.style.left = targetX + 'px';
-                robot.style.top = targetY + 'px';
-            }, 50);
+            function executeNextWaypoint() {
+                if (step < waypoints.length) {
+                    const waypoint = waypoints[step];
+                    robot.style.transition = `all ${waypoint.duration}s ease-in-out`; // Smooth transitions for each leg
+                    robot.style.left = waypoint.x + 'px';
+                    robot.style.top = waypoint.y + 'px';
+                    step++;
+                    fullyActuatedAnimationTimeout = setTimeout(executeNextWaypoint, waypoint.duration * 1000 + 100); // Add a small delay
+                } else {
+                    // Animation complete, reset after a short delay
+                    setTimeout(() => {
+                        resetElement('fullyActuatedRobot', startX, startY);
+                    }, 1000);
+                }
+            }
+
+            // Start the animation sequence
+            setTimeout(executeNextWaypoint, 50); // Small initial delay to ensure reset
         }
 
         // --- Underactuated Animation (Cart moving, pendulum swinging due to cart's motion) ---
@@ -363,55 +391,58 @@
         function startUnderactuatedAnimation() {
             const cart = document.getElementById('cart');
             const pendulumRod = document.getElementById('pendulum-rod');
-            const pendulumBob = document.getElementById('pendulum-bob'); // Not directly animated, but useful for context
-
+            
             // Reset
             clearTimeout(pendulumAnimationTimeout);
             const initialCartX = 150;
-            const initialPendulumRodX = initialCartX + (cart.offsetWidth / 2) - (pendulumRod.offsetWidth / 2); // Center rod above cart
+            // Calculate initial pendulum rod X to be centered on the cart
+            const initialPendulumRodX = initialCartX + (cart.offsetWidth / 2) - (pendulumRod.offsetWidth / 2); 
+            
             resetElement('cart', initialCartX, 140);
-            resetElement('pendulum-rod', initialPendulumRodX, 60, 'rotate(0deg)');
+            resetElement('pendulum-rod', initialPendulumRodX, 45, 'rotate(0deg)'); // Rod top is at 45px
 
             // Define a sequence of cart movements and corresponding pendulum swings
-            // Each step moves the cart, and the pendulum reacts.
-            // The goal is to show the *indirect* control.
             const sequence = [
-                { cartX: 280, rotation: -30, delay: 1200 }, // Push cart right, pendulum swings left
-                { cartX: 50, rotation: 30, delay: 1800 },   // Push cart left, pendulum swings right
-                { cartX: 180, rotation: -15, delay: 1200 }, // Push cart right slightly, slight swing
-                { cartX: initialCartX, rotation: 0, delay: 1500 }    // Return to center, try to settle upright
+                // Move cart right, pendulum swings left relative to cart
+                { cartTargetX: 280, pendulumRotation: -30, duration: 1200 }, 
+                // Move cart left, pendulum swings right relative to cart
+                { cartTargetX: 50, pendulumRotation: 30, duration: 1800 },   
+                // Move cart right, pendulum swings slightly left
+                { cartTargetX: 180, pendulumRotation: -15, duration: 1200 }, 
+                // Return to center, try to settle upright
+                { cartTargetX: initialCartX, pendulumRotation: 0, duration: 1500 }    
             ];
 
             let step = 0;
 
             function executeStep() {
                 if (step < sequence.length) {
-                    const { cartX, rotation, delay } = sequence[step];
+                    const { cartTargetX, pendulumRotation, duration } = sequence[step];
 
-                    // Calculate the new pendulum rod's left position to stay centered above the cart
-                    const newPendulumRodX = cartX + (cart.offsetWidth / 2) - (pendulumRod.offsetWidth / 2);
+                    // Calculate the new pendulum rod's left position to stay centered above the cart's *new* position
+                    const newPendulumRodX = cartTargetX + (cart.offsetWidth / 2) - (pendulumRod.offsetWidth / 2);
 
-                    cart.style.transition = `left ${delay / 1000}s ease-in-out`;
-                    cart.style.left = cartX + 'px';
+                    // Apply transitions
+                    cart.style.transition = `left ${duration / 1000}s ease-in-out`;
+                    cart.style.left = cartTargetX + 'px';
 
-                    // Update pendulum rod's position and rotation simultaneously
-                    pendulumRod.style.transition = `all ${delay / 1000}s cubic-bezier(0.42, 0, 0.58, 1.0)`; /* Smooth pendulum swing */
-                    pendulumRod.style.left = newPendulumRodX + 'px'; // Update position
-                    pendulumRod.style.transform = `rotate(${rotation}deg)`;
+                    pendulumRod.style.transition = `all ${duration / 1000}s cubic-bezier(0.42, 0, 0.58, 1.0)`; /* Smooth pendulum swing */
+                    pendulumRod.style.left = newPendulumRodX + 'px'; // Update position to follow cart
+                    pendulumRod.style.transform = `rotate(${pendulumRotation}deg)`;
 
                     step++;
-                    pendulumAnimationTimeout = setTimeout(executeStep, delay + 100); // Add a small buffer between steps
+                    pendulumAnimationTimeout = setTimeout(executeStep, duration + 100); // Small buffer
                 } else {
-                    // Reset to initial state after sequence completes
+                    // Animation complete, reset after a short delay
                     setTimeout(() => {
                         resetElement('cart', initialCartX, 140);
-                        resetElement('pendulum-rod', initialPendulumRodX, 60, 'rotate(0deg)');
-                    }, 500); // Small delay before final reset
+                        resetElement('pendulum-rod', initialPendulumRodX, 45, 'rotate(0deg)');
+                    }, 500);
                 }
             }
 
             // Start the animation sequence
-            setTimeout(executeStep, 50);
+            setTimeout(executeStep, 50); // Small initial delay to ensure reset applies
         }
 
 
