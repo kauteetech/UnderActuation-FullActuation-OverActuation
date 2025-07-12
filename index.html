@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -88,6 +87,7 @@
             top: 70px;
             left: 310px;
         }
+
         /* Underactuated Specifics (Cart-Pendulum) */
         #cart {
             width: 60px;
@@ -110,7 +110,7 @@
         #pendulum-bob {
             width: 20px;
             height: 20px;
-            background-color: #d9534f;
+            background-color: #33aaff; /* Blue for underactuated */
             border-radius: 50%;
             position: absolute;
             top: -10px; /* Relative to rod */
@@ -146,7 +146,7 @@
         }
         #prop1 { left: -10px; }
         #prop2 { right: -10px; }
-        #prop3 { left: 45px; } /* These two will be removed in the animation */
+        #prop3 { left: 45px; }
         #prop4 { right: 45px; }
 
         @keyframes spin {
@@ -209,18 +209,19 @@
         <div class="scenario">
             <h2>Fully Actuated System</h2>
             <div class="animation-area">
-                <div class="robot-body" id="fullyActuatedRobot">Robot</div>
-                <div class="target fully-actuated-target">T</div>
+                <div class="robot-body" id="fullyActuatedRobot">OmniCar</div>
+                <div class="target fully-actuated-target">Target</div>
             </div>
             <p>
-                A **fully actuated** system has as many independent **actuators** ($n_a$) as its degrees of freedom ($n_{DoF}$). It can move directly along any desired path.
+                A **fully actuated** system has an equal number of independent **actuators** (motors, thrusters, etc.) as its degrees of freedom (DoFs). This means you have direct, independent control over every way the robot can move.
+            </p>
+            <p style="font-style: italic;">
+                **Real-world example:** An **omnidirectional mobile robot** (like some forklifts or factory robots with special wheels) can move directly sideways, forward, backward, or rotate, all at the same time, without needing to turn its wheels or body. It has a motor for each of these independent motions.
             </p>
             <div class="math-formula">
-                **Condition:** $ n_a = n_{DoF} $
+                **Condition:** $ n_{\text{actuators}} = n_{\text{degrees of freedom}} $
                 <br>
-                **Control Example:** $ \mathbf{\tau} = \mathbf{M}(\mathbf{q})\ddot{\mathbf{q}} + \mathbf{C}(\mathbf{q},\dot{\mathbf{q}})\dot{\mathbf{q}} + \mathbf{G}(\mathbf{q}) $
-                <br>
-                (Each joint torque/force $\tau_i$ directly controls a DoF $\ddot{q}_i$)
+                **Control Analogy:** Imagine having a separate joystick for every possible movement.
             </div>
             <button onclick="startFullyActuatedAnimation()">Animate Fully Actuated</button>
         </div>
@@ -230,22 +231,19 @@
             <div class="animation-area">
                 <div id="cart" class="robot-body">Cart</div>
                 <div id="pendulum-rod">
-                    <div id="pendulum-bob"></div>
+                    <div id="pendulum-bob">Pendulum</div>
                 </div>
             </div>
-            <p id="underactuatedDesc">
-                An **underactuated** system has fewer independent **actuators** ($n_a$) than its degrees of freedom ($n_{DoF}$). Motion of unactuated DoFs (like the pendulum's swing) is achieved indirectly by controlling actuated parts (the cart).
+            <p>
+                An **underactuated** system has **fewer** independent actuators than its degrees of freedom. This means some motions can't be directly controlled; you have to influence them indirectly by moving the parts you *can* control.
+            </p>
+            <p style="font-style: italic;">
+                **Real-world example:** A **bicycle** has many ways to move (forward, turn, lean, balance), but you primarily control only two things: the pedaling (forward motion) and the handlebars (steering). You don't have a direct "balance motor"; you balance by moving the handlebars and shifting your body, which indirectly affects the bike's lean.
             </p>
             <div class="math-formula">
-                **Condition:** $ n_a < n_{DoF} $
+                **Condition:** $ n_{\text{actuators}} < n_{\text{degrees of freedom}} $
                 <br>
-                **Example:** Cart-Pendulum ($n_a=1$, $n_{DoF}=2$)
-                <br>
-                $ (M+m)\ddot{x} + ml\ddot{\theta}\cos\theta - ml\dot{\theta}^2\sin\theta = u $
-                <br>
-                $ (I+ml^2)\ddot{\theta} + ml\ddot{x}\cos\theta + mgl\sin\theta = 0 $
-                <br>
-                (Cart force $u$ influences both $x$ and $\theta$)
+                **Control Analogy:** Like balancing a stick on your finger – you only move your finger, but you indirectly control the stick's tilt.
             </div>
             <button onclick="startUnderactuatedAnimation()">Animate Underactuated</button>
         </div>
@@ -259,15 +257,18 @@
                     <div class="propeller" id="prop3"></div>
                     <div class="propeller" id="prop4"></div>
                 </div>
-                <div class="target" style="top: 130px; left: 310px;">Land</div>
+                <div class="target" style="top: 130px; left: 310px;">Landing</div>
             </div>
             <p>
-                An **overactuated** system has more independent **actuators** ($n_a$) than its degrees of freedom ($n_{DoF}$). This redundancy allows for fault tolerance (e.g., losing a propeller) or optimized performance.
+                An **overactuated** system has **more** independent actuators than its degrees of freedom. This "extra" control ability (redundancy) is often used for reliability, safety, or to achieve tasks more efficiently.
+            </p>
+            <p style="font-style: italic;">
+                **Real-world example:** Most **quadrotor drones** (like the ones you see delivering packages or filming) have 4 propellers. To move in 3D space and rotate (6 degrees of freedom), they technically only *need* 4 perfectly controlled propellers. However, many larger drones might have 6 or 8 propellers (**hexacopters/octocopters**). If one or two propellers fail, the drone can often still land safely using the remaining ones.
             </p>
             <div class="math-formula">
-                **Condition:** $ n_a > n_{DoF} $
+                **Condition:** $ n_{\text{actuators}} > n_{\text{degrees of freedom}} $
                 <br>
-                **Fault Tolerance Example:** If a thruster fails, the remaining thrusters can still generate the required forces/moments.
+                **Benefit:** Improved fault tolerance, redundancy.
             </div>
             <button onclick="startOveractuatedAnimation()">Animate Overactuated</button>
         </div>
@@ -280,7 +281,7 @@
         // Helper to reset a robot's styling
         function resetElement(elementId, initialLeft, initialTop, initialTransform = 'none') {
             const el = document.getElementById(elementId);
-            if (!el) return; // Guard against non-existent elements
+            if (!el) return;
             el.style.transition = 'none';
             el.style.left = initialLeft !== undefined ? initialLeft + 'px' : el.style.left;
             el.style.top = initialTop !== undefined ? initialTop + 'px' : el.style.top;
@@ -288,33 +289,30 @@
             void el.offsetWidth; // Trigger reflow
         }
 
-        // --- Fully Actuated Animation ---
+        // --- Fully Actuated Animation (Omni-directional movement) ---
         function startFullyActuatedAnimation() {
             const robot = document.getElementById('fullyActuatedRobot');
             resetElement('fullyActuatedRobot', 20, 70);
 
             setTimeout(() => {
-                robot.style.transition = 'all 2s linear';
+                robot.style.transition = 'all 2s ease-in-out';
                 robot.style.left = '310px';
                 robot.style.top = '70px';
+                // Imagine it can move diagonally, directly to the target.
             }, 50);
         }
 
-        // --- Underactuated Animation (Cart-Pendulum Swing-Up) ---
+        // --- Underactuated Animation (Cart moving, pendulum swinging) ---
         let pendulumInterval;
         function startUnderactuatedAnimation() {
             const cart = document.getElementById('cart');
             const pendulumRod = document.getElementById('pendulum-rod');
-            const desc = document.getElementById('underactuatedDesc');
+            const pendulumBob = document.getElementById('pendulum-bob');
 
             // Reset
             clearInterval(pendulumInterval);
-            resetElement('cart', 150, 140); // Initial center x, bottom y
+            resetElement('cart', 150, 140);
             resetElement('pendulum-rod', 178, 60, 'rotate(0deg)'); // Adjust x for rod center, bottom for pivot
-            pendulumRod.style.transition = 'none';
-
-            desc.innerHTML = `An **underactuated** system has fewer independent **actuators** ($n_a$) than its degrees of freedom ($n_{DoF}$). Motion of unactuated DoFs (like the pendulum's swing) is achieved indirectly by controlling actuated parts (the cart).`;
-
 
             let cartX = 150;
             let pendulumAngle = 0; // degrees, 0 = straight down
@@ -323,72 +321,50 @@
             const dt = 0.05; // Time step for simulation
             const g = 9.81; // Gravity
             const L = 80; // Pendulum rod length (pixels)
-            const M = 10; // Cart mass (arbitrary)
-            const m = 1; // Pendulum bob mass (arbitrary)
-            const u_max = 50; // Max force on cart
 
-            let swingUpPhase = 0; // 0: initial swing, 1: balance
+            // Simple movement of the cart to show it affects the pendulum
+            let direction = 1; // 1 for right, -1 for left
+            let moveCounter = 0; // To limit total moves
 
             pendulumInterval = setInterval(() => {
                 const sinTheta = Math.sin(pendulumAngle * Math.PI / 180);
                 const cosTheta = Math.cos(pendulumAngle * Math.PI / 180);
 
-                let u = 0; // Control force on cart
+                // Apply a simple oscillating force to the cart
+                let u = direction * 50 * Math.sin(Date.now() / 500); // Oscillating force
 
-                // Simple swing-up control: push cart to "pump" the pendulum
-                if (swingUpPhase === 0) {
-                    if (pendulumAngle < -45) { // If swinging left
-                        u = -u_max; // Push left
-                    } else if (pendulumAngle > 45) { // If swinging right
-                        u = u_max; // Push right
-                    }
-
-                    if (Math.abs(pendulumAngle) < 10 && Math.abs(pendulumAngularVelocity) < 1) { // If near upright and slow
-                        swingUpPhase = 1;
-                        desc.innerHTML = `**Balancing:** Cart moves subtly to keep the pendulum upright. Notice the unactuated swing is now controlled.`;
-                    }
-                } else { // Balancing phase (simplified PID-like control)
-                    // P-control for angle and angular velocity
-                    u = -20 * pendulumAngle - 5 * pendulumAngularVelocity;
-                    u = Math.max(-u_max, Math.min(u_max, u)); // Clamp force
-                }
-
-
-                // Equations of motion (simplified for visual effect)
-                const ddtheta = (g / L) * sinTheta - (u / (M + m * sinTheta * sinTheta)) * (cosTheta / L);
-                const ddx = (u + m * L * pendulumAngularVelocity * pendulumAngularVelocity * sinTheta - m * L * ddtheta * cosTheta) / (M + m);
-
-                pendulumAngularVelocity += ddtheta * dt;
+                // Simplified pendulum dynamics
+                const ddtheta = (-g / L) * sinTheta; // Gravity's effect on pendulum
+                // Now, add the effect of cart's acceleration on the pendulum
+                // This is a simplified coupling:
+                const cartAccelerationEffect = -(u / (100 + 1)) * (cosTheta / L); // Arbitrary cart mass 100 for effect
+                pendulumAngularVelocity += (ddtheta + cartAccelerationEffect) * dt;
                 pendulumAngle += pendulumAngularVelocity * dt * (180 / Math.PI); // Convert to degrees
 
-                cartX += (ddx * dt * 50); // Scale acceleration for visual speed
-
-
-                // Clamp cart position to stay within animation area
-                if (cartX < 0) { cartX = 0; }
-                if (cartX > 300) { cartX = 300; }
-
-                cart.style.left = cartX + 'px';
-                pendulumRod.style.left = (cartX + 28) + 'px'; // Adjust for rod's pivot point on cart
-                pendulumRod.style.transform = `rotate(${pendulumAngle}deg)`;
-
-                // Stop after some time or if balanced
-                if (Math.abs(pendulumAngle) < 5 && Math.abs(pendulumAngularVelocity) < 0.5 && swingUpPhase === 1) {
-                    // Balanced!
+                // Move the cart left and right
+                cartX += direction * 2; // Constant cart speed
+                if (cartX > 280 || cartX < 20) {
+                    direction *= -1; // Reverse direction
+                    moveCounter++;
                 }
 
-            }, dt * 1000); // Convert dt to milliseconds
+                cart.style.left = cartX + 'px';
+                pendulumRod.style.left = (cartX + 28) + 'px'; // Keep rod centered on cart
+                pendulumRod.style.transform = `rotate(${pendulumAngle}deg)`;
 
-            setTimeout(() => {
-                clearInterval(pendulumInterval);
-                desc.innerHTML = `An **underactuated** system has fewer independent **actuators** ($n_a$) than its degrees of freedom ($n_{DoF}$). Motion of unactuated DoFs (like the pendulum's swing) is achieved indirectly by controlling actuated parts (the cart).`;
-                resetElement('cart', 150, 140);
-                resetElement('pendulum-rod', 178, 60, 'rotate(0deg)');
-            }, 10000); // Run for 10 seconds
+                if (moveCounter >= 5) { // Stop after 5 back-and-forth movements
+                    clearInterval(pendulumInterval);
+                    // Reset to initial state after animation
+                    setTimeout(() => {
+                        resetElement('cart', 150, 140);
+                        resetElement('pendulum-rod', 178, 60, 'rotate(0deg)');
+                    }, 500);
+                }
 
+            }, dt * 1000);
         }
 
-        // --- Overactuated Animation (Drone) ---
+        // --- Overactuated Animation (Drone with simulated failure and recovery) ---
         let droneAnimationInterval;
         function startOveractuatedAnimation() {
             const droneBody = document.getElementById('droneBody');
@@ -403,59 +379,47 @@
             [prop1, prop2, prop3, prop4].forEach(p => {
                 p.classList.remove('failed');
                 p.style.display = 'block'; // Ensure all props are visible
+                p.style.animation = 'spin 0.5s linear infinite'; // Restart animation
             });
 
-            // Initial movement: fly down to a target, then back up a bit
+            // Phase 1: Initial stable flight
             droneBody.style.transition = 'all 3s ease-in-out';
-            droneBody.style.top = '120px'; // Move down
+            droneBody.style.top = '100px'; // Hover down slightly
+            droneBody.style.left = '50px'; // Move left
 
-            setTimeout(() => {
-                droneBody.style.transition = 'all 0.5s linear';
-                droneBody.style.top = '100px'; // Lift slightly
-            }, 3000); // After initial descent
-
-            // Simulate propeller failure after a short delay
+            // Phase 2: Propeller failure
             setTimeout(() => {
                 prop4.classList.add('failed'); // Prop 4 fails
-                prop4.style.display = 'none'; // Hide it for effect
-                droneBody.style.transition = 'all 2s ease-out';
-                droneBody.style.left = 'calc(50% - 30px)'; // Try to re-center
-                droneBody.style.top = '140px'; // Descend a bit due to failure, then recover
-                
-                // Show recovery
+                prop4.style.display = 'none'; // Visually show it's gone
+                prop4.style.animation = 'none'; // Stop its spin animation
+
+                // Drone momentarily dips and wobbles (simulated)
+                droneBody.style.transition = 'all 1s linear';
+                droneBody.style.top = '120px'; // Dip
+                droneBody.style.transform = 'rotate(5deg)'; // Wobble
+
+                // Phase 3: Recovery using remaining propellers
                 setTimeout(() => {
-                    if (!prop4.classList.contains('failed')) return; // If already reset
-                    droneBody.style.transition = 'all 1s ease-in-out';
-                    droneBody.style.top = '120px'; // Regain altitude
-                    droneBody.style.left = '310px'; // Move towards final target smoothly
-                    
-                }, 1000); // 1 sec after failure
-                
-                // Final landing sequence after demonstrating recovery
-                 setTimeout(() => {
-                    droneBody.style.transition = 'all 2s ease-in';
-                    droneBody.style.top = '130px'; // Land at the target
-                    droneBody.style.left = '310px'; // Keep at target X
-                 }, 4000); // 4 seconds after failure, or 7 seconds from start
-                 
+                    if (prop4.classList.contains('failed')) { // Only if still failed
+                        droneBody.style.transition = 'all 2s ease-out';
+                        droneBody.style.top = '130px'; // Move towards landing target
+                        droneBody.style.left = '310px';
+                        droneBody.style.transform = 'rotate(0deg)'; // Recover orientation
+                    }
+                }, 1000); // 1 sec after failure (4s from start)
 
-            }, 4000); // Fail after 4 seconds from start (1 second after lift)
+            }, 3000); // Propeller fails after 3 seconds of flight
 
-             setTimeout(() => {
+            // Phase 4: Reset
+            setTimeout(() => {
                 resetElement('droneBody', 150, 50);
                 [prop1, prop2, prop3, prop4].forEach(p => {
                     p.classList.remove('failed');
                     p.style.display = 'block';
+                    p.style.animation = 'spin 0.5s linear infinite';
                 });
-            }, 9000); // Reset after 9 seconds
-
+            }, 8000); // Reset after 8 seconds total
         }
-
-        // Optional: Run first animation on page load
-        document.addEventListener('DOMContentLoaded', () => {
-             // For better clarity, let's not auto-start, but let the user click.
-        });
-
     </script>
 </body>
 </html>
