@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Robot Actuation & Order Animation with Math</title>
+    <title>Robot Actuation Concepts (Improved Animations)</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -29,11 +30,11 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             padding: 20px;
             text-align: center;
-            width: 350px; /* Wider to accommodate formulas */
+            width: 380px; /* Wider to accommodate formulas and complex animations */
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
-            justify-content: space-between; /* Space out content */
+            justify-content: space-between;
         }
         .scenario h2 {
             color: #0056b3;
@@ -41,75 +42,29 @@
             font-size: 1.3em;
         }
         .animation-area {
-            width: 330px; /* Adjusted width */
-            height: 150px;
+            width: 360px; /* Adjusted width */
+            height: 180px; /* Increased height for more complex movements */
             border: 2px solid #ccc;
             margin: 15px auto;
             position: relative;
             overflow: hidden;
             background-color: #e9e9e9;
         }
-        .robot {
+
+        /* General Robot styling */
+        .robot-body {
             position: absolute;
-            width: 30px;
-            height: 30px;
             background-color: #ff5733;
-            border-radius: 50%;
+            border-radius: 5px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
             font-size: 0.8em;
             font-weight: bold;
-            top: 60px; /* Start in the middle vertically */
-            left: 10px;
-        }
-        .robot.underactuated {
-            background-color: #33aaff; /* Blue for underactuated */
-        }
-        .robot.overactuated {
-            background-color: #5cb85c; /* Green for overactuated */
-        }
-        .robot.fully-actuated {
-            background-color: #f0ad4e; /* Orange for fully actuated */
-        }
-        .robot.first-order {
-            background-color: #6a05ad; /* Purple for first order */
-        }
-        .robot.second-order {
-            background-color: #d9534f; /* Red for second order */
-        }
-        p {
-            font-size: 0.9em;
-            color: #555;
-            flex-grow: 1; /* Allow description to take available space */
-            margin-bottom: 10px; /* Space before formulas */
-        }
-        .math-formula {
-            font-family: serif; /* MathJax default font usually serif */
-            margin: 10px 0;
-            color: #333;
-            font-size: 1.1em;
-            border-top: 1px dashed #eee;
-            padding-top: 10px;
-        }
-        button {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1em;
-            margin-top: auto; /* Push button to bottom */
-        }
-        button:hover {
-            background-color: #0056b3;
         }
         .target {
             position: absolute;
-            top: 60px;
-            right: 10px;
             width: 30px;
             height: 30px;
             border: 2px dashed #007bff;
@@ -119,6 +74,117 @@
             justify-content: center;
             color: #007bff;
             font-size: 0.8em;
+        }
+
+        /* Fully Actuated Specifics */
+        #fullyActuatedRobot {
+            width: 40px;
+            height: 40px;
+            background-color: #f0ad4e;
+            top: 70px;
+            left: 20px;
+        }
+        .fully-actuated-target {
+            top: 70px;
+            left: 310px;
+        }
+        /* Underactuated Specifics (Cart-Pendulum) */
+        #cart {
+            width: 60px;
+            height: 20px;
+            background-color: #555;
+            position: absolute;
+            bottom: 20px; /* On the "ground" */
+            left: calc(50% - 30px); /* Center initially */
+        }
+        #pendulum-rod {
+            width: 4px;
+            height: 80px;
+            background-color: #888;
+            position: absolute;
+            transform-origin: bottom center;
+            bottom: 40px; /* Above the cart */
+            left: calc(50% - 2px);
+            transition: none; /* Controlled by JS */
+        }
+        #pendulum-bob {
+            width: 20px;
+            height: 20px;
+            background-color: #d9534f;
+            border-radius: 50%;
+            position: absolute;
+            top: -10px; /* Relative to rod */
+            left: -8px; /* Relative to rod */
+        }
+        #underactuatedDesc {
+            font-size: 0.85em; /* Smaller text for more info */
+        }
+
+        /* Overactuated Specifics (Drone) */
+        #droneBody {
+            width: 60px;
+            height: 10px;
+            background-color: #5cb85c;
+            position: absolute;
+            top: 50px;
+            left: calc(50% - 30px);
+            border-radius: 3px;
+        }
+        .propeller {
+            width: 15px;
+            height: 5px;
+            background-color: #333;
+            position: absolute;
+            border-radius: 2px;
+            top: -10px; /* Above body */
+            transform-origin: center center; /* For rotation */
+            animation: spin 0.5s linear infinite;
+        }
+        .propeller.failed {
+            background-color: #ff0000;
+            animation: none; /* Stop spinning */
+        }
+        #prop1 { left: -10px; }
+        #prop2 { right: -10px; }
+        #prop3 { left: 45px; } /* These two will be removed in the animation */
+        #prop4 { right: 45px; }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Common Styling for Formulas */
+        p {
+            font-size: 0.9em;
+            color: #555;
+            flex-grow: 1;
+            margin-bottom: 10px;
+        }
+        .math-formula {
+            font-family: serif;
+            margin: 10px 0;
+            color: #333;
+            font-size: 1.1em;
+            border-top: 1px dashed #eee;
+            padding-top: 10px;
+            min-height: 80px; /* Ensure space for formulas */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            margin-top: auto;
+        }
+        button:hover {
+            background-color: #0056b3;
         }
     </style>
     <script>
@@ -135,175 +201,261 @@
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
 <body>
-    <h1>Robot Actuation & Order Concepts</h1>
-    <p>Watch how the 'robot' moves to illustrate different concepts. **(Requires internet connection for formulas)**</p>
+    <h1>Robot Actuation Concepts: Visualized</h1>
+    <p>Explore the difference between fully, under, and overactuated systems. **(Requires internet connection for formulas)**</p>
 
     <div class="concept-container">
 
         <div class="scenario">
-            <h2>First Order System</h2>
+            <h2>Fully Actuated System</h2>
             <div class="animation-area">
-                <div class="robot first-order" id="robot1">1st</div>
-                <div class="target">T</div>
+                <div class="robot-body" id="fullyActuatedRobot">Robot</div>
+                <div class="target fully-actuated-target">T</div>
             </div>
             <p>
-                In a **first-order system**, the output's rate of change is directly proportional to the difference between its current state and the desired state. It moves smoothly towards the target without oscillation.
-            </p>
-            <div class="math-formula">
-                **Equation:** $ \tau \frac{dy(t)}{dt} + y(t) = K u(t) $
-                <br>
-                **Simplified for Velocity:** $ F = b \cdot v $
-                <br>
-                *Where:*
-                <br>
-                $F$: Force, $b$: Damping coefficient, $v$: Velocity
-            </div>
-            <button onclick="startAnimation('robot1', 'firstOrder')">Start 1st Order</button>
-        </div>
-
-        <div class="scenario">
-            <h2>Second Order System</h2>
-            <div class="animation-area">
-                <div class="robot second-order" id="robot2">2nd</div>
-                <div class="target">T</div>
-            </div>
-            <p>
-                A **second-order system** involves acceleration (rate of change of velocity). Its response can oscillate and overshoot before settling, depending on its damping characteristics. Most rigid-body robots exhibit second-order dynamics.
-            </p>
-            <div class="math-formula">
-                **Equation:** $ m \frac{d^2x}{dt^2} + b \frac{dx}{dt} + kx = F $
-                <br>
-                **Newton's Second Law:** $ F = m \cdot a $
-                <br>
-                *Where:*
-                <br>
-                $F$: Force, $m$: Mass, $a$: Acceleration, $b$: Damping, $k$: Stiffness
-            </div>
-            <button onclick="startAnimation('robot2', 'secondOrder')">Start 2nd Order</button>
-        </div>
-
-        <div class="scenario">
-            <h2>Fully Actuated</h2>
-            <div class="animation-area">
-                <div class="robot fully-actuated" id="robot3">Full</div>
-                <div class="target">T</div>
-            </div>
-            <p>
-                A **fully actuated** system has an equal number of independent **actuators** ($n_a$) as its degrees of freedom ($n_{DoF}$). This provides direct control over every possible motion.
+                A **fully actuated** system has as many independent **actuators** ($n_a$) as its degrees of freedom ($n_{DoF}$). It can move directly along any desired path.
             </p>
             <div class="math-formula">
                 **Condition:** $ n_a = n_{DoF} $
                 <br>
-                **Control Input:** $ \tau = I \ddot{q} + C(\dot{q}, q) \dot{q} + G(q) $
+                **Control Example:** $ \mathbf{\tau} = \mathbf{M}(\mathbf{q})\ddot{\mathbf{q}} + \mathbf{C}(\mathbf{q},\dot{\mathbf{q}})\dot{\mathbf{q}} + \mathbf{G}(\mathbf{q}) $
                 <br>
-                *Where:*
-                <br>
-                $\tau$: Actuator torques/forces, $I$: Inertia matrix, $q$: Joint angles/positions
+                (Each joint torque/force $\tau_i$ directly controls a DoF $\ddot{q}_i$)
             </div>
-            <button onclick="startAnimation('robot3', 'fullyActuated')">Start Fully Actuated</button>
+            <button onclick="startFullyActuatedAnimation()">Animate Fully Actuated</button>
         </div>
 
         <div class="scenario">
-            <h2>Underactuated</h2>
+            <h2>Underactuated System</h2>
             <div class="animation-area">
-                <div class="robot underactuated" id="robot4">Under</div>
-                <div class="target">T</div>
+                <div id="cart" class="robot-body">Cart</div>
+                <div id="pendulum-rod">
+                    <div id="pendulum-bob"></div>
+                </div>
             </div>
-            <p>
-                An **underactuated** system has fewer independent **actuators** ($n_a$) than its degrees of freedom ($n_{DoF}$). Control requires exploiting system dynamics to move unactuated DoFs (e.g., a bicycle balancing).
+            <p id="underactuatedDesc">
+                An **underactuated** system has fewer independent **actuators** ($n_a$) than its degrees of freedom ($n_{DoF}$). Motion of unactuated DoFs (like the pendulum's swing) is achieved indirectly by controlling actuated parts (the cart).
             </p>
             <div class="math-formula">
                 **Condition:** $ n_a < n_{DoF} $
                 <br>
-                **Dynamic Coupling:** Control inputs affect both actuated and unactuated DoFs.
+                **Example:** Cart-Pendulum ($n_a=1$, $n_{DoF}=2$)
+                <br>
+                $ (M+m)\ddot{x} + ml\ddot{\theta}\cos\theta - ml\dot{\theta}^2\sin\theta = u $
+                <br>
+                $ (I+ml^2)\ddot{\theta} + ml\ddot{x}\cos\theta + mgl\sin\theta = 0 $
+                <br>
+                (Cart force $u$ influences both $x$ and $\theta$)
             </div>
-            <button onclick="startAnimation('robot4', 'underactuated')">Start Underactuated</button>
+            <button onclick="startUnderactuatedAnimation()">Animate Underactuated</button>
         </div>
 
         <div class="scenario">
-            <h2>Overactuated</h2>
+            <h2>Overactuated System</h2>
             <div class="animation-area">
-                <div class="robot overactuated" id="robot5">Over</div>
-                <div class="target">T</div>
+                <div id="droneBody" class="robot-body">
+                    <div class="propeller" id="prop1"></div>
+                    <div class="propeller" id="prop2"></div>
+                    <div class="propeller" id="prop3"></div>
+                    <div class="propeller" id="prop4"></div>
+                </div>
+                <div class="target" style="top: 130px; left: 310px;">Land</div>
             </div>
             <p>
-                An **overactuated** system has more independent **actuators** ($n_a$) than its degrees of freedom ($n_{DoF}$). This provides redundancy, improving fault tolerance and allowing for optimized performance.
+                An **overactuated** system has more independent **actuators** ($n_a$) than its degrees of freedom ($n_{DoF}$). This redundancy allows for fault tolerance (e.g., losing a propeller) or optimized performance.
             </p>
             <div class="math-formula">
                 **Condition:** $ n_a > n_{DoF} $
                 <br>
-                **Redundancy Resolution:**
-                <br>
-                Minimize $ J = \tau^T W \tau $ subject to $ J\tau = \dot{x} $
+                **Fault Tolerance Example:** If a thruster fails, the remaining thrusters can still generate the required forces/moments.
             </div>
-            <button onclick="startAnimation('robot5', 'overactuated')">Start Overactuated</button>
+            <button onclick="startOveractuatedAnimation()">Animate Overactuated</button>
         </div>
 
     </div>
 
     <script>
-        const targetX = 290; // Target X position for the robot (right side of animation area)
-        const startX = 10;   // Starting X position for the robot (left side)
+        // --- Animation Functions ---
 
-        function resetRobot(robotId) {
-            const robot = document.getElementById(robotId);
-            robot.style.left = startX + 'px';
-            robot.style.top = '60px'; // Reset vertical position
-            robot.style.transition = 'none'; // Clear any ongoing transitions
-            robot.style.transform = 'none'; // Clear any ongoing transforms
-            void robot.offsetWidth; // Trigger reflow to apply transition:none immediately
+        // Helper to reset a robot's styling
+        function resetElement(elementId, initialLeft, initialTop, initialTransform = 'none') {
+            const el = document.getElementById(elementId);
+            if (!el) return; // Guard against non-existent elements
+            el.style.transition = 'none';
+            el.style.left = initialLeft !== undefined ? initialLeft + 'px' : el.style.left;
+            el.style.top = initialTop !== undefined ? initialTop + 'px' : el.style.top;
+            el.style.transform = initialTransform;
+            void el.offsetWidth; // Trigger reflow
         }
 
-        function startAnimation(robotId, type) {
-            resetRobot(robotId); // Reset position before starting
-            const robot = document.getElementById(robotId);
-            
-            // A small delay is needed after changing style.transition to 'none' and before setting new transition
+        // --- Fully Actuated Animation ---
+        function startFullyActuatedAnimation() {
+            const robot = document.getElementById('fullyActuatedRobot');
+            resetElement('fullyActuatedRobot', 20, 70);
+
             setTimeout(() => {
-                switch (type) {
-                    case 'firstOrder':
-                        robot.style.transition = 'left 3s ease-out';
-                        robot.style.left = targetX + 'px';
-                        break;
-                    case 'secondOrder':
-                        robot.style.transition = 'left 3s cubic-bezier(0.68, -0.55, 0.265, 1.55)'; /* Spring-like */
-                        robot.style.left = targetX + 'px';
-                        break;
-                    case 'fullyActuated':
-                        robot.style.transition = 'left 2s linear';
-                        robot.style.left = targetX + 'px';
-                        break;
-                    case 'underactuated':
-                        robot.style.transition = 'all 4s ease-in-out';
-                        // Simulate a swing-up path (move down, then up, then right)
-                        robot.style.transform = 'translate(0px, 30px)'; // Down slightly
-                        setTimeout(() => {
-                            robot.style.transform = `translate(${targetX - startX}px, -30px)`; // Up and right
-                            setTimeout(() => {
-                                robot.style.transform = `translate(${targetX - startX}px, 0px)`; // Settle at target height
-                                robot.style.left = targetX + 'px'; // Final position update
-                                robot.style.top = '60px';
-                                robot.style.transform = 'none'; // Clear transform
-                            }, 1500); // Time for the up-and-right swing
-                        }, 500); // Time for the initial downward motion
-                        break;
-                    case 'overactuated':
-                        robot.style.transition = 'left 4s linear'; // Initial slow movement
-                        robot.style.left = targetX + 'px';
-
-                        // Simulate a "backup" actuator kicking in halfway
-                        setTimeout(() => {
-                            // Check if the robot has reached the target yet
-                            const currentLeft = parseFloat(robot.style.left);
-                            if (currentLeft < targetX - 5) { // If not very close to target
-                                robot.style.transition = 'left 0.5s ease-out'; // Faster finish
-                                robot.style.left = targetX + 'px';
-                            }
-                        }, 2000); // After 2 seconds, give a "redundant push"
-                        break;
-                }
-            }, 50); // Small delay to ensure reset applies
+                robot.style.transition = 'all 2s linear';
+                robot.style.left = '310px';
+                robot.style.top = '70px';
+            }, 50);
         }
+
+        // --- Underactuated Animation (Cart-Pendulum Swing-Up) ---
+        let pendulumInterval;
+        function startUnderactuatedAnimation() {
+            const cart = document.getElementById('cart');
+            const pendulumRod = document.getElementById('pendulum-rod');
+            const desc = document.getElementById('underactuatedDesc');
+
+            // Reset
+            clearInterval(pendulumInterval);
+            resetElement('cart', 150, 140); // Initial center x, bottom y
+            resetElement('pendulum-rod', 178, 60, 'rotate(0deg)'); // Adjust x for rod center, bottom for pivot
+            pendulumRod.style.transition = 'none';
+
+            desc.innerHTML = `An **underactuated** system has fewer independent **actuators** ($n_a$) than its degrees of freedom ($n_{DoF}$). Motion of unactuated DoFs (like the pendulum's swing) is achieved indirectly by controlling actuated parts (the cart).`;
+
+
+            let cartX = 150;
+            let pendulumAngle = 0; // degrees, 0 = straight down
+            let pendulumAngularVelocity = 0;
+
+            const dt = 0.05; // Time step for simulation
+            const g = 9.81; // Gravity
+            const L = 80; // Pendulum rod length (pixels)
+            const M = 10; // Cart mass (arbitrary)
+            const m = 1; // Pendulum bob mass (arbitrary)
+            const u_max = 50; // Max force on cart
+
+            let swingUpPhase = 0; // 0: initial swing, 1: balance
+
+            pendulumInterval = setInterval(() => {
+                const sinTheta = Math.sin(pendulumAngle * Math.PI / 180);
+                const cosTheta = Math.cos(pendulumAngle * Math.PI / 180);
+
+                let u = 0; // Control force on cart
+
+                // Simple swing-up control: push cart to "pump" the pendulum
+                if (swingUpPhase === 0) {
+                    if (pendulumAngle < -45) { // If swinging left
+                        u = -u_max; // Push left
+                    } else if (pendulumAngle > 45) { // If swinging right
+                        u = u_max; // Push right
+                    }
+
+                    if (Math.abs(pendulumAngle) < 10 && Math.abs(pendulumAngularVelocity) < 1) { // If near upright and slow
+                        swingUpPhase = 1;
+                        desc.innerHTML = `**Balancing:** Cart moves subtly to keep the pendulum upright. Notice the unactuated swing is now controlled.`;
+                    }
+                } else { // Balancing phase (simplified PID-like control)
+                    // P-control for angle and angular velocity
+                    u = -20 * pendulumAngle - 5 * pendulumAngularVelocity;
+                    u = Math.max(-u_max, Math.min(u_max, u)); // Clamp force
+                }
+
+
+                // Equations of motion (simplified for visual effect)
+                const ddtheta = (g / L) * sinTheta - (u / (M + m * sinTheta * sinTheta)) * (cosTheta / L);
+                const ddx = (u + m * L * pendulumAngularVelocity * pendulumAngularVelocity * sinTheta - m * L * ddtheta * cosTheta) / (M + m);
+
+                pendulumAngularVelocity += ddtheta * dt;
+                pendulumAngle += pendulumAngularVelocity * dt * (180 / Math.PI); // Convert to degrees
+
+                cartX += (ddx * dt * 50); // Scale acceleration for visual speed
+
+
+                // Clamp cart position to stay within animation area
+                if (cartX < 0) { cartX = 0; }
+                if (cartX > 300) { cartX = 300; }
+
+                cart.style.left = cartX + 'px';
+                pendulumRod.style.left = (cartX + 28) + 'px'; // Adjust for rod's pivot point on cart
+                pendulumRod.style.transform = `rotate(${pendulumAngle}deg)`;
+
+                // Stop after some time or if balanced
+                if (Math.abs(pendulumAngle) < 5 && Math.abs(pendulumAngularVelocity) < 0.5 && swingUpPhase === 1) {
+                    // Balanced!
+                }
+
+            }, dt * 1000); // Convert dt to milliseconds
+
+            setTimeout(() => {
+                clearInterval(pendulumInterval);
+                desc.innerHTML = `An **underactuated** system has fewer independent **actuators** ($n_a$) than its degrees of freedom ($n_{DoF}$). Motion of unactuated DoFs (like the pendulum's swing) is achieved indirectly by controlling actuated parts (the cart).`;
+                resetElement('cart', 150, 140);
+                resetElement('pendulum-rod', 178, 60, 'rotate(0deg)');
+            }, 10000); // Run for 10 seconds
+
+        }
+
+        // --- Overactuated Animation (Drone) ---
+        let droneAnimationInterval;
+        function startOveractuatedAnimation() {
+            const droneBody = document.getElementById('droneBody');
+            const prop1 = document.getElementById('prop1');
+            const prop2 = document.getElementById('prop2');
+            const prop3 = document.getElementById('prop3');
+            const prop4 = document.getElementById('prop4');
+
+            // Reset state
+            clearInterval(droneAnimationInterval);
+            resetElement('droneBody', 150, 50);
+            [prop1, prop2, prop3, prop4].forEach(p => {
+                p.classList.remove('failed');
+                p.style.display = 'block'; // Ensure all props are visible
+            });
+
+            // Initial movement: fly down to a target, then back up a bit
+            droneBody.style.transition = 'all 3s ease-in-out';
+            droneBody.style.top = '120px'; // Move down
+
+            setTimeout(() => {
+                droneBody.style.transition = 'all 0.5s linear';
+                droneBody.style.top = '100px'; // Lift slightly
+            }, 3000); // After initial descent
+
+            // Simulate propeller failure after a short delay
+            setTimeout(() => {
+                prop4.classList.add('failed'); // Prop 4 fails
+                prop4.style.display = 'none'; // Hide it for effect
+                droneBody.style.transition = 'all 2s ease-out';
+                droneBody.style.left = 'calc(50% - 30px)'; // Try to re-center
+                droneBody.style.top = '140px'; // Descend a bit due to failure, then recover
+                
+                // Show recovery
+                setTimeout(() => {
+                    if (!prop4.classList.contains('failed')) return; // If already reset
+                    droneBody.style.transition = 'all 1s ease-in-out';
+                    droneBody.style.top = '120px'; // Regain altitude
+                    droneBody.style.left = '310px'; // Move towards final target smoothly
+                    
+                }, 1000); // 1 sec after failure
+                
+                // Final landing sequence after demonstrating recovery
+                 setTimeout(() => {
+                    droneBody.style.transition = 'all 2s ease-in';
+                    droneBody.style.top = '130px'; // Land at the target
+                    droneBody.style.left = '310px'; // Keep at target X
+                 }, 4000); // 4 seconds after failure, or 7 seconds from start
+                 
+
+            }, 4000); // Fail after 4 seconds from start (1 second after lift)
+
+             setTimeout(() => {
+                resetElement('droneBody', 150, 50);
+                [prop1, prop2, prop3, prop4].forEach(p => {
+                    p.classList.remove('failed');
+                    p.style.display = 'block';
+                });
+            }, 9000); // Reset after 9 seconds
+
+        }
+
+        // Optional: Run first animation on page load
+        document.addEventListener('DOMContentLoaded', () => {
+             // For better clarity, let's not auto-start, but let the user click.
+        });
+
     </script>
 </body>
 </html>
